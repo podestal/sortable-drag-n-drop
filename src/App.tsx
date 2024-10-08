@@ -1,5 +1,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
+import { FiPlus, FiTrash } from "react-icons/fi"
+import { FaFire } from "react-icons/fa"
 
 const DEFAULT_CARDS = [
   // BACKLOG
@@ -80,6 +82,7 @@ const Board = () => {
         cards={cards}
         setCards={setCards}
       />
+      <BurnBarrel setCards={setCards}/>
     </div>
   )
 }
@@ -119,6 +122,8 @@ const Column = ({ title, headingColor, column, cards, setCards }: ColumnPros) =>
             handleDragStart=''
           />
         ))}
+        <DropIndicator beforeId='-1' column={column} />
+        <AddCard column={column} setCards={setCards}/>
       </div>
     </div>
   )
@@ -134,7 +139,7 @@ interface CardProps {
 const Card = ({ title, id, column, handleDragStart }: CardProps) => {
   return (
     <>
-      {/* <DropIndicator beforeId={id} column={column} /> */}
+      <DropIndicator beforeId={id} column={column} />
       <motion.div
         layout
         layoutId={id}
@@ -148,4 +153,87 @@ const Card = ({ title, id, column, handleDragStart }: CardProps) => {
   );
 };
 
+interface DropIndicatorProps {
+  beforeId: string
+  column: string
+}
+
+const DropIndicator = ({ beforeId, column }: DropIndicatorProps) => {
+  return (
+    <div
+      data-before={beforeId || "-1"}
+      data-column={column}
+      className="my-0.5 h-0.5 w-full bg-violet-400 opacity-0"
+    />
+  );
+};
+
+const BurnBarrel = ({ setCards }: {setCards: any}) => {
+  const [active, setActive] = useState(false);
+
+  return (
+    <div
+      className={`mt-10 grid h-56 w-56 shrink-0 place-content-center rounded border text-3xl ${
+        active
+          ? "border-red-800 bg-red-800/20 text-red-500"
+          : "border-neutral-500 bg-neutral-500/20 text-neutral-500"
+      }`}
+    >
+      {active ? <FaFire className="animate-bounce" /> : <FiTrash />}
+    </div>
+  );
+};
+
 export default App
+
+interface AddCardProps {
+  column: string
+  setCards: any
+} 
+
+const AddCard = ({ column, setCards }: AddCardProps) => {
+  const [text, setText] = useState("");
+  const [adding, setAdding] = useState(false);
+
+  const handleSubmit = () => {
+    
+  }
+
+  return (
+    <>
+      {adding 
+      ? 
+      <motion.form layout onSubmit={handleSubmit}>
+        <textarea
+          onChange={(e) => setText(e.target.value)}
+          autoFocus
+          placeholder="Add new task..."
+          className="w-full rounded border border-violet-400 bg-violet-400/20 p-3 text-sm text-neutral-50 placeholder-violet-300 focus:outline-0"
+        />
+        <div className="mt-1.5 flex items-center justify-end gap-1.5">
+          <button
+            onClick={() => setAdding(false)}
+            className="px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-50"
+          >
+            Close
+          </button>
+          <button
+            type="submit"
+            className="flex items-center gap-1.5 rounded bg-neutral-50 px-3 py-1.5 text-xs text-neutral-950 transition-colors hover:bg-neutral-300"
+          >
+            <span>Add</span>
+            <FiPlus />
+          </button>
+        </div>
+      </motion.form>
+      :
+      <button
+        onClick={() => setAdding(true)}
+        className="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-50"
+      >
+        <span>Add card</span>
+        <FiPlus />
+      </button>}
+    </>
+  )
+}
