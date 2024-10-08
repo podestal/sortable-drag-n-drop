@@ -1,4 +1,4 @@
-import { useState } from "react"
+import React, { DragEventHandler, useState } from "react"
 import { motion } from "framer-motion"
 import { FiPlus, FiTrash } from "react-icons/fi"
 import { FaFire } from "react-icons/fa"
@@ -100,6 +100,10 @@ const Column = ({ title, headingColor, column, cards, setCards }: ColumnPros) =>
   const [active, setActive] = useState(false)
   const filteredCards = cards.filter( card => card.column === column)
 
+  const handleDragStart = (e:any, card:Card) => {
+    e.dataTransfer.setData("cardId", card.id)
+  }
+
   return (
     <div className="w-56 shrink-0">
       <div className="mb-3 flex items-center justify-between">
@@ -119,7 +123,7 @@ const Column = ({ title, headingColor, column, cards, setCards }: ColumnPros) =>
             id={fileteredCard.id}
             title={fileteredCard.title}
             column={fileteredCard.column}
-            handleDragStart=''
+            handleDragStart={handleDragStart}
           />
         ))}
         <DropIndicator beforeId='-1' column={column} />
@@ -171,8 +175,27 @@ const DropIndicator = ({ beforeId, column }: DropIndicatorProps) => {
 const BurnBarrel = ({ setCards }: {setCards: any}) => {
   const [active, setActive] = useState(false);
 
+  const handleDragOver = (e:any) => {
+    e.preventDefault()
+    setActive(true)
+  }
+
+  const handleDragLeave = () => {
+    setActive(false)
+  }
+
+  const handleDragEnd = (e:any) => {
+    const cardId = e.dataTransfer.getData('cardId')
+    setCards((prev: Card[]) => prev.filter( card => card.id !== cardId))
+    setActive(false)
+    
+  }
+
   return (
     <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDragEnd}
       className={`mt-10 grid h-56 w-56 shrink-0 place-content-center rounded border text-3xl ${
         active
           ? "border-red-800 bg-red-800/20 text-red-500"
@@ -195,8 +218,19 @@ const AddCard = ({ column, setCards }: AddCardProps) => {
   const [text, setText] = useState("");
   const [adding, setAdding] = useState(false);
 
-  const handleSubmit = () => {
-    
+  const handleSubmit = (e:React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    const newCard = {
+      title: text.trim(),
+      column,
+      id: Math.random().toString()
+    }
+
+    setCards((prev: Card[]) => [...prev, newCard])
+
+    setAdding(false)
+    setText("")
   }
 
   return (
@@ -208,7 +242,7 @@ const AddCard = ({ column, setCards }: AddCardProps) => {
           onChange={(e) => setText(e.target.value)}
           autoFocus
           placeholder="Add new task..."
-          className="w-full rounded border border-violet-400 bg-violet-400/20 p-3 text-sm text-neutral-50 placeholder-violet-300 focus:outline-0"
+          className="w-full rounded border border-blue-400 bg-blue-400/20 p-3 text-sm text-neutral-50 placeholder-blue-300 focus:outline-0"
         />
         <div className="mt-1.5 flex items-center justify-end gap-1.5">
           <button
