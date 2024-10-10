@@ -91,7 +91,7 @@ interface ColumnPros {
   title: string
   headingColor: string
   column: string
-  setCards: (setter: []) => void
+  setCards: (setter: any) => void
   cards: Card[]
 }
 
@@ -159,9 +159,37 @@ const Column = ({ title, headingColor, column, cards, setCards }: ColumnPros) =>
     clearHighlights()
   }
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (e: any) => {
     setActive(false)
     clearHighlights()
+
+    const cardId = e.dataTransfer.getData('cardId')
+    const indicators = getIndicators()
+    const { element } = getNearestIndicator(e, indicators)
+
+    const before = element.dataset.before || "-1"
+
+    if (before !== cardId) {
+      let copy = [...cards]
+      let cardToTransfer = copy.find( card => card.id === cardId)
+      if (!cardToTransfer) return
+      cardToTransfer = { ...cardToTransfer, column}
+
+      copy = copy.filter( card => card.id !== cardId)
+
+      const moveToBack = before === '-1'
+
+      if (moveToBack) {
+        copy.push(cardToTransfer)
+      } else {
+        const insertAtIndex = copy.findIndex(element => element.id === before)
+        if (insertAtIndex === undefined) return
+        copy.splice(insertAtIndex, 0, cardToTransfer)
+      }
+      setCards(copy)
+
+    }
+
   }
 
   return (
